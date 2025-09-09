@@ -107,3 +107,11 @@
 /vol.api/VOL.WebApi/obj
 /vol.api/VOL.WebApi/bin
 /vol.api.sqlsugar/.vs
+
+Vol.Vue3版本/dist/
+
+Vol.Vue3版本/node_modules/
+
+Vol.Vue3版本/package-lock.json
+
+Vol.Vue3版本/yarn.lock
