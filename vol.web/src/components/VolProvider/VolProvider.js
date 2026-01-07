@@ -1,4 +1,5 @@
 import common from '@/uitils/common.js'
+import {compressImage } from './VolImgCompress.js'
 import store from '@/store/index'
 const getImgUrls = (imgs) => {
   return imgs
@@ -27,6 +28,8 @@ const getFormValues = (formFields, formOptions) => {
     if (typeof val == 'function') {
       formValues[key] = formFields[key]()
       continue
+    } else if (typeof val == 'string' && val) {
+      val = val.trim();
     }
     //解决下拉框清除后不能保存数据的问题
     if (val === undefined) {
@@ -282,9 +285,13 @@ const getSearchParameters = (proxy, formFields, formRules) => {
       //查询下面所有的子节点，如：选中的是父节点，应该查询下面所有的节点数据--待完
       if (value && value.length) {
         let nodes = proxy.base.getTreeAllChildren(value[value.length - 1], option.orginData)
-        value = nodes.map((x) => {
-          return x.id
-        })
+        if (!(nodes?.length)) {
+          value = [value[value.length - 1]]
+        } else {
+          value = nodes.map((x) => {
+            return x.id
+          })
+        }
         displayType = 'selectList'
       }
     } else if (displayType == 'treeSelect' && Array.isArray(value)) {
@@ -321,6 +328,41 @@ const getSearchParameters = (proxy, formFields, formRules) => {
   return wheres
 }
 
+
+const generateUniqueFileName = (originalFileName) => {
+  const timestamp = new Date().getTime();
+  const random = Math.random().toString(36).substring(2, 8);
+  const parts = originalFileName.split('.');
+  const fileExtension = parts.length > 1 ? parts.pop().toLowerCase() : '';
+  let uniqueFileName = `${timestamp}_${random}.${fileExtension}`
+  return uniqueFileName;
+};
+//重置文件名
+const resetFileName = async (files, callbck) => {
+  if (!files?.length) return
+  for (let index = 0; index < files.length; index++) {
+    let originalFile = files[index]
+    if (!originalFile.size) {
+      continue;
+    }
+    const uniqueFileName = await callbck?.(originalFile) || generateUniqueFileName(originalFile.name);
+    if (uniqueFileName===false) {
+      continue;
+    }
+    let  extension='';
+    if (!uniqueFileName.includes('.')) {
+      extension='.'+originalFile.name.split('.').pop();
+    }
+    const newFile = new File([originalFile], uniqueFileName+extension, {
+      type: originalFile.type,
+      lastModified: originalFile.lastModified
+    });
+    newFile.input=originalFile.input
+    files.splice(index, 1, newFile);
+  }
+}
+
+
 export default {
   getFormValues,
   resetForm,
@@ -335,5 +377,7 @@ export default {
   getItem,
   getAccessToken,
   isEmptyValue,
-  getSearchParameters
+  getSearchParameters,
+  resetFileName,
+  compressImage
 }

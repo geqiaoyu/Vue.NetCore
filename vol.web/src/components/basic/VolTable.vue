@@ -17,6 +17,7 @@
       <vol-loading></vol-loading>
     </div>
     <el-table
+      :key="randomTableKey"
       :show-summary="summaryData.length > 0"
       :summary-method="getSummaryData"
       :row-key="rowKey"
@@ -1022,8 +1023,8 @@ const addRow = (row) => {
   return row
 }
 
-const delRow = () => {
-  const rows = getSelected()
+const delRow = (rows) => {
+   rows =rows|| getSelected()
   delTableRow(proxy, edit, getTableData(), rows, getSelectedIndex())
   return rows
 }
